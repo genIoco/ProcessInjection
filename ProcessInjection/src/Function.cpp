@@ -1,40 +1,11 @@
-## Windows下的进程注入方法
+#include "Function.h"
+#include "../../shellcode/shellcode.h"
+#include "Util.h"
 
-### 0x00 前言
+WCHAR ProcessName[] = L"notepad.exe";
 
-​		本项目致力于尽可能多的收集Windows下的进程注入方法，并提供源码复现。
-
-### 0x01 工作计划
-
-- [x] DLL Hollowing
-
-### 0x02 注入内容
-
-​		为了验证注入方法的可行性，我们使用`msfvenmon`工具生成执行命令行的shellcode：
-
-```
-msfvenom -p windows/x64/exec CMD=cmd.exe -f c > shellcode.h
-```
-
-### 0x03 DLL Hollowing
-
-​		Module Stomping（又称为Module Overloading或DLL Hollowing）技术，基本原理是将一些正常的DLL注入到目标进程中，寻找入口函数，并使用ShellCode覆盖入口地址所指向的内容，创建新线程加以执行。
-
-#### 基本步骤
-
-- 向远程进程中导入良性Windows DLL，例如`C:\\windows\\system32\\amsi.dll`
-- 使用ShellCode覆写良性DLL的入口地址内容。
-- 启动线程执行DLL 入口地址。
-
-#### 优势
-
-- 无需显式分配或者修改`RWX`执行权限内存页。
-- ShellCode被注入到完全合法的Windows DLL中，因此基于文件路径或文件名的检测失效。
-- 执行ShellCode的远程线程由合法的Windows模块相关联。
-
-#### 源码实现
-
-```
+// Module Stomping (or Module Overloading or DLL Hollowing)
+// https://www.ired.team/offensive-security/code-injection-process-injection/modulestomping-dll-hollowing-shellcode-injection
 int DLLHollowing()
 {
 	HANDLE processHandle;
@@ -98,5 +69,3 @@ int DLLHollowing()
 
 	return 0;
 }
-```
-
